@@ -27,6 +27,7 @@ While ChatGpt alone has more than 1.8 billion monthly visits, we believe that th
 * Website: https://its-ai.org
 * Twitter(X): https://x.com/ai_detection
 * Accuracy report: https://its-ai.org/en/accuracy
+* All you need to know about It's AI: https://x.com/ai_detection/status/2041893481556185408
 
 ## Key Highlights (TL;DR)
 Here is a key highlights of It's AI, which will be fully covered further:

@@ -72,6 +72,11 @@ To start your miner basic command is
 pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --wallet.name YOUR_COLDKEY --wallet.hotkey YOUR_HOTKEY --neuron.device cuda:0 --axon.port 70000 
 ```
 
+
+```bash
+pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --wallet.name default --wallet.hotkey default --neuron.device cuda:0 --axon.port 30001
+```
+
 ## Running the Miner on TESTNET
 
 We have testnet subnet with netuid **87**. There is our validator running with uid 52 and hotkey `5Eo4PQvU4fhGLhk91UKpAaaEH59aHsVsw2jZ6ZhRT12s6JRA`.  

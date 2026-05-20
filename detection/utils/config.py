@@ -236,4 +236,31 @@ def config(cls):
     bt.logging.add_args(parser)
     bt.Axon.add_args(parser)
     cls.add_args(parser)
-    return bt.Config(parser)
+    parsed_args = parser.parse_args()
+    args_dict = vars(parsed_args)
+    # Convert flat keys with dots to nested dicts
+    def nest_dict(flat):
+        result = {}
+        for k, v in flat.items():
+            if '.' in k:
+                head, tail = k.split('.', 1)
+                if head not in result:
+                    result[head] = {}
+                result[head][tail] = v
+            else:
+                result[k] = v
+        # Recursively nest
+        for k, v in result.items():
+            if isinstance(v, dict):
+                result[k] = nest_dict(v)
+        return result
+    nested = nest_dict(args_dict)
+    def dict_to_config(obj):
+        if isinstance(obj, dict):
+            cfg = bt.Config()
+            for k, v in obj.items():
+                cfg[k] = dict_to_config(v)
+            return cfg
+        return obj
+    cfg = dict_to_config(nested)
+    return cfg

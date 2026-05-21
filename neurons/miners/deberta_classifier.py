@@ -51,14 +51,27 @@ def GeneratePredictions(model, tokenizer, test_dataset, device):
 class DebertaClassifier:
     def __init__(self, foundation_model_path, model_path, device):
         self.tokenizer = AutoTokenizer.from_pretrained(foundation_model_path)
+
         self.max_length = 1024
         self.device = device
 
+        checkpoint = torch.load(model_path, map_location=device)
+
         model = AutoModelForSequenceClassification.from_pretrained(
             foundation_model_path,
-            state_dict=torch.load(model_path),
             attention_probs_dropout_prob=0,
-            hidden_dropout_prob=0).to(device)
+            hidden_dropout_prob=0
+        )
+
+        if "model" in checkpoint:
+            checkpoint = checkpoint["model"]
+
+        elif "state_dict" in checkpoint:
+            checkpoint = checkpoint["state_dict"]
+
+        model.load_state_dict(checkpoint, strict=False)
+
+        model = model.to(device)
 
         self.model = model.eval()
 

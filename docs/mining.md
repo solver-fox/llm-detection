@@ -100,3 +100,9 @@ pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --walle
 ```
 
 > IMPORTANT: you should set `blacklist.minimum_stake_requirement` argument to 0 so our validator won't get blacklisted
+
+## Calculate SN32 Miner Score
+
+```bash
+python scripts/eval_miner_sn32.py --n-samples 1000
+```

@@ -18,6 +18,23 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 from detection.validator.reward import reward as sn32_reward
 from miners.deberta_classifier import DebertaClassifier
+from miners.dactyl_classifier import DactylClassifier
+
+
+def load_model(args):
+    if args.model_type == "dactyl":
+        return DactylClassifier(model_path=args.dactyl, device=args.device)
+    if args.model_type == "ppl":
+        from miners.ppl_model import PPLModel
+
+        model = PPLModel(device=args.device)
+        model.load_pretrained(args.ppl)
+        return model
+    return DebertaClassifier(
+        foundation_model_path=args.foundation,
+        model_path=args.weights,
+        device=args.device,
+    )
 
 
 def main():
@@ -40,7 +57,22 @@ def main():
         type=str,
         default=os.path.join(ROOT, "models/deberta-large-ls03-ctx1024.pth"),
     )
-    parser.add_argument("--batch-size", type=int, default=8, help="unused; deberta uses internal bs=4")
+    parser.add_argument(
+        "--model-type",
+        type=str,
+        choices=["deberta", "dactyl", "ppl"],
+        default="deberta",
+    )
+    parser.add_argument(
+        "--dactyl",
+        type=str,
+        default=os.path.join(ROOT, "models/DACTYL"),
+    )
+    parser.add_argument(
+        "--ppl",
+        type=str,
+        default=os.path.join(ROOT, "models/ppl_model.pk"),
+    )
     args = parser.parse_args()
 
     print(f"Loading dataset from {args.dataset} ...")
@@ -50,12 +82,8 @@ def main():
     labels = np.array(dataset["generated"], dtype=bool)
 
     print(f"Samples: {len(texts)} (human={np.sum(~labels)}, ai={np.sum(labels)})")
-    print(f"Loading model on {args.device} ...")
-    model = DebertaClassifier(
-        foundation_model_path=args.foundation,
-        model_path=args.weights,
-        device=args.device,
-    )
+    print(f"Loading model ({args.model_type}) on {args.device} ...")
+    model = load_model(args)
 
     print("Running inference ...")
     y_pred = np.array(model.predict_batch(texts), dtype=np.float64)

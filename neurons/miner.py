@@ -33,6 +33,7 @@ from miners.ppl_model import PPLModel
 from transformers.utils import logging as hf_logging
 
 from miners.deberta_classifier import DebertaClassifier
+from miners.dactyl_classifier import DactylClassifier
 
 hf_logging.set_verbosity(40)
 
@@ -49,13 +50,24 @@ class Miner(BaseMinerNeuron):
     def __init__(self, config=None):
         super(Miner, self).__init__(config=config)
 
-        if self.config.neuron.model_type == 'ppl':
+        model_type = self.config.neuron.model_type
+        bt.logging.info(f"Loading miner model type: {model_type}")
+
+        if model_type == 'ppl':
             self.model = PPLModel(device=self.device)
             self.model.load_pretrained(self.config.neuron.ppl_model_path)
+        elif model_type == 'dactyl':
+            self.model = DactylClassifier(
+                model_path=self.config.neuron.dactyl_model_path,
+                device=self.device,
+            )
         else:
-            self.model = DebertaClassifier(foundation_model_path=self.config.neuron.deberta_foundation_model_path,
-                                           model_path=self.config.neuron.deberta_model_path,
-                                           device=self.device)
+            # default: deberta (subnet stock weights)
+            self.model = DebertaClassifier(
+                foundation_model_path=self.config.neuron.deberta_foundation_model_path,
+                model_path=self.config.neuron.deberta_model_path,
+                device=self.device,
+            )
 
         self.load_state()
 

@@ -219,9 +219,16 @@ def add_args(cls, parser):
         )
 
         parser.add_argument(
+            "--neuron.dactyl_model_path",
+            type=str,
+            help="Path to DACTYL HuggingFace model directory (config + model.safetensors)",
+            default="models/DACTYL",
+        )
+
+        parser.add_argument(
             "--neuron.model_type",
             type=str,
-            help="Which model use, on of ['deberta', 'ppl']",
+            help="Which model to use: one of ['deberta', 'ppl', 'dactyl']",
             default="deberta",
         )
 

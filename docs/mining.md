@@ -77,17 +77,36 @@ pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --walle
 pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --wallet.name default --wallet.hotkey default --neuron.device cuda:0 --axon.port 30001
 ```
 
+### Model types
+
+The miner supports three backends (pick one with `--neuron.model_type`):
+
+| `model_type` | Description | Main paths |
+|--------------|-------------|------------|
+| `deberta` (default) | Subnet stock DeBERTa-v3-large + finetuned `.pth` | `models/deberta-v3-large-hf-weights`, `models/deberta-large-ls03-ctx1024.pth` |
+| `dactyl` | [DACTYL](https://huggingface.co/papers/2508.00619) EXM detector (full HF folder) | `models/DACTYL` |
+| `ppl` | Perplexity-based classifier | `models/ppl_model.pk` |
+
+**DACTYL miner (mainnet example):**
+
 ```bash
-python -m neurons.miner \
-    --netuid 32 \
-    --subtensor.network finney \
-    --wallet.name default \
-    --wallet.hotkey default \
-    --miner.dactyl_model_path /path/to/models/DACTYL \
-    --miner.device cuda \
-    --miner.batch_size 32 \
-    --logging.debug
+pm2 start ./neurons/miner.py \
+  --name net32-miner-dactyl \
+  --interpreter /path/to/conda/envs/bittensor/bin/python3 \
+  --cwd /path/to/sn32 \
+  -- \
+  --wallet.name YOUR_COLDKEY \
+  --wallet.hotkey YOUR_HOTKEY \
+  --neuron.device cuda:0 \
+  --axon.port 70000 \
+  --netuid 32 \
+  --neuron.model_type dactyl \
+  --neuron.dactyl_model_path models/DACTYL
 ```
+
+**DeBERTa miner** — omit `--neuron.model_type` or set `--neuron.model_type deberta`.
+
+You can run **separate PM2 processes** on different ports if you want both models registered (each needs its own hotkey or port).
 
 ## Running the Miner on TESTNET
 
@@ -138,6 +157,9 @@ conda activate bittensor   # or your env
 cd llm-detection          # repo root
 
 python scripts/eval_miner_sn32.py --n-samples 1000 --device cuda:0
+
+# DACTYL
+python scripts/eval_miner_sn32.py --n-samples 1000 --device cuda:0 --model-type dactyl --dactyl models/DACTYL
 ```
 
 **Options:**
@@ -168,6 +190,6 @@ Read **FP** and **FN** in the confusion line: FP = human texts wrongly marked AI
 
 ### Notes
 
-- Uses the same **DeBERTa** paths as the default miner (`--neuron.model_type deberta`).
+- Use `--model-type deberta` (default), `dactyl`, or `ppl` to match your miner backend.
 - Offline score is a **proxy**; validators use Pile + Ollama-generated text, augmentations, and per-word predictions — see [incentive.md](incentive.md).
 - For a quick notebook check, see `neurons/run_deberta.ipynb`.

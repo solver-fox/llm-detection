@@ -88,6 +88,16 @@ For the time we're on bittensor, we've made incentive mechanism stable and effec
 
 If you want to dig deeper into incentive mechanism, check out [incentive doc](docs/incentive.md)  .
 
+### Miner score (offline benchmark)
+
+Validators reward miners with the average of **F1**, **FP score** (fewer human→AI mistakes), and **AP**. To measure your model locally on the ahmadreza13 dataset:
+
+```bash
+python scripts/eval_miner_sn32.py --n-samples 1000 --device cuda:0
+```
+
+Full formulas, dataset fields, and CLI options: [Mining docs — Calculate SN32 miner score](docs/mining.md#calculate-sn32-miner-score-offline).
+
 ### Disclaimer
 The tokens known as “Tao” or “Alpha Tao” associated with our subnet are not issued, sponsored, or endorsed by ITSAI TECHNOLOGIES - FZCO. These tokens are managed independently within the Bittensor ecosystem, and ITSAI TECHNOLOGIES - FZCO holds no responsibility or control over their issuance, distribution, or any related securities offerings.
 

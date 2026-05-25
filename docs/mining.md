@@ -101,8 +101,73 @@ pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --walle
 
 > IMPORTANT: you should set `blacklist.minimum_stake_requirement` argument to 0 so our validator won't get blacklisted
 
-## Calculate SN32 Miner Score
+## Calculate SN32 miner score (offline)
+
+You can estimate how your miner model would score **before** going on-chain, using the same reward function as validators (`detection/validator/reward.py`).
+
+### What the score is
+
+For each text, the miner returns a probability that the text is **AI-generated** (class 1). Validators compare predictions to labels and compute three metrics, then average them:
+
+| Metric | Meaning |
+|--------|---------|
+| **F1** | Balance of precision and recall (binary labels, threshold 0.5) |
+| **FP score** | `1 - FP / N` — penalizes flagging **human** text as AI (false positives) |
+| **AP** | Average precision over probability rankings |
+
+**SN32 miner reward** = `(F1 + FP score + AP) / 3`
+
+Higher is better. A score near **1.0** is excellent; live subnet rewards also apply **penalties** (consistency checks, stake, out-of-domain F1) that this offline script does not simulate. See [incentive.md](incentive.md).
+
+### Default evaluation dataset
+
+The bundled script uses the local [ahmadreza13/human-vs-Ai-generated-dataset](https://huggingface.co/datasets/ahmadreza13/human-vs-Ai-generated-dataset) copy under `datasets/ahmadreza13/data`:
+
+- `data` — text
+- `generated` — `1` = AI, `0` = human
+- `model` — source (e.g. wikipedia, GPT variants)
+
+It shuffles with a fixed seed, then takes the first `N` rows (default 1000).
+
+### Run the evaluation
+
+From the repo root, with your conda/venv active and DeBERTa weights in `models/`:
 
 ```bash
-python scripts/eval_miner_sn32.py --n-samples 1000
+conda activate bittensor   # or your env
+cd llm-detection          # repo root
+
+python scripts/eval_miner_sn32.py --n-samples 1000 --device cuda:0
 ```
+
+**Options:**
+
+```bash
+python scripts/eval_miner_sn32.py \
+  --n-samples 1000 \
+  --seed 42 \
+  --device cuda:0 \
+  --dataset datasets/ahmadreza13/data \
+  --foundation models/deberta-v3-large-hf-weights \
+  --weights models/deberta-large-ls03-ctx1024.pth
+```
+
+**Example output:**
+
+```text
+=== SN32 miner score (validator reward) ===
+  sn32_reward (avg of F1, FP-score, AP): 0.5901
+  f1_score:    0.5783
+  fp_score:    0.5040
+  ap_score:    0.6881
+  accuracy:    0.4750
+  confusion:   TN=115 FP=496 FN=29 TP=360
+```
+
+Read **FP** and **FN** in the confusion line: FP = human texts wrongly marked AI; FN = AI texts missed.
+
+### Notes
+
+- Uses the same **DeBERTa** paths as the default miner (`--neuron.model_type deberta`).
+- Offline score is a **proxy**; validators use Pile + Ollama-generated text, augmentations, and per-word predictions — see [incentive.md](incentive.md).
+- For a quick notebook check, see `neurons/run_deberta.ipynb`.

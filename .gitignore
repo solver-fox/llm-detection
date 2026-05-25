@@ -11,6 +11,9 @@ wandb/*
 models/
 models/*
 
+dataset/
+datasets/*
+
 nohup.out
 
 # Byte-compiled / optimized / DLL files

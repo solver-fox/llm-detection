@@ -1,3 +1,8 @@
+import os
+
+# Avoid loading TensorFlow via transformers (not needed for inference; breaks on protobuf mismatches).
+os.environ.setdefault("USE_TF", "0")
+
 import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding

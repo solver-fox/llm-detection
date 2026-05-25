@@ -77,6 +77,18 @@ pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --walle
 pm2 start --name net32-miner --interpreter python3 ./neurons/miner.py -- --wallet.name default --wallet.hotkey default --neuron.device cuda:0 --axon.port 30001
 ```
 
+```bash
+python -m neurons.miner \
+    --netuid 32 \
+    --subtensor.network finney \
+    --wallet.name default \
+    --wallet.hotkey default \
+    --miner.dactyl_model_path /path/to/models/DACTYL \
+    --miner.device cuda \
+    --miner.batch_size 32 \
+    --logging.debug
+```
+
 ## Running the Miner on TESTNET
 
 We have testnet subnet with netuid **87**. There is our validator running with uid 52 and hotkey `5Eo4PQvU4fhGLhk91UKpAaaEH59aHsVsw2jZ6ZhRT12s6JRA`.  
